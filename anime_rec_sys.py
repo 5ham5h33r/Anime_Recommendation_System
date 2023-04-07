@@ -2,8 +2,6 @@ from sklearn.metrics.pairwise import sigmoid_kernel
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import re
 import streamlit as st
 
