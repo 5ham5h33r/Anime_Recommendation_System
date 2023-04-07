@@ -9,9 +9,15 @@ import streamlit as st
 # ratings_path = 'animelist.csv'
 data_path = 'processed_anime.csv'
 # anime_ratings = pd.read_csv(ratings_path)
-anime_data = pd.read_csv(data_path)
 
 
+@st.cache_data
+def load_csv():
+    anime_data = pd.read_csv(data_path)
+    return anime_data
+
+
+anime_data = load_csv()
 genres_str = anime_data['Genres'].str.split(',').astype(str)
 
 # Initialize the TfidfVectorizer with various parameters
