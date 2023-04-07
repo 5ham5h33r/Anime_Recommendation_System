@@ -4,11 +4,18 @@ import numpy as np
 import pandas as pd
 import re
 import streamlit as st
+import joblib
+import os
 
 # Load the anime data and ratings data
 # ratings_path = 'animelist.csv'
 data_path = 'processed_anime.csv'
 # anime_ratings = pd.read_csv(ratings_path)
+
+
+tfv_file = 'tfv.joblib'
+sig_file = 'sig.joblib'
+indices_file = 'indices.joblib'
 
 
 @st.cache_data
@@ -18,28 +25,41 @@ def load_csv():
 
 
 anime_data = load_csv()
-genres_str = anime_data['Genres'].str.split(',').astype(str)
 
-# Initialize the TfidfVectorizer with various parameters
-tfv = TfidfVectorizer(min_df=3, max_features=None,
-                      strip_accents='unicode', analyzer='word',
-                      token_pattern=r'\w{1,}',
-                      ngram_range=(1, 3),
-                      stop_words='english')
+if os.path.exists(tfv_file) and os.path.exists(sig_file) and os.path.exists(indices_file):
+    print("Found existing joblib files, loading them...")
+    tfv_matrix = joblib.load(tfv_file)
+    sig = joblib.load(sig_file)
+    indices = joblib.load(indices_file)
+    print("Files loaded successfully!")
+else:
+    print("Files not found, generating them..")
+    genres_str = anime_data['Genres'].str.split(',').astype(str)
 
-# Use the TfidfVectorizer to transform the genres_str into a sparse matrix
-tfv_matrix = tfv.fit_transform(genres_str)
+    # Initialize the TfidfVectorizer with various parameters
+    tfv = TfidfVectorizer(min_df=3, max_features=None,
+                          strip_accents='unicode', analyzer='word',
+                          token_pattern=r'\w{1,}',
+                          ngram_range=(1, 3),
+                          stop_words='english')
 
-# Compute the sigmoid kernel
-sig = sigmoid_kernel(tfv_matrix, tfv_matrix)
+    # Use the TfidfVectorizer to transform the genres_str into a sparse matrix
+    tfv_matrix = tfv.fit_transform(genres_str)
 
-# Create a Pandas Series object where the index is the anime names and the values are the indices in anime_data
-indices = pd.Series(anime_data.index, index=anime_data['Name'])
-indices = indices.drop_duplicates()
+    # Compute the sigmoid kernel
+    sig = sigmoid_kernel(tfv_matrix, tfv_matrix)
+
+    # Create a Pandas Series object where the index is the anime names and the values are the indices in anime_data
+    indices = pd.Series(anime_data.index, index=anime_data['Name'])
+    indices = indices.drop_duplicates()
+
+    joblib.dump(tfv_matrix, tfv_file)
+    joblib.dump(sig, sig_file)
+    joblib.dump(indices, indices_file)
+    print("Files generated successfully!")
+
 
 # Define the give_rec function to recommend anime based on similarity to input title
-
-
 def give_rec(title, sig=sig):
     # Get the index corresponding to anime title
     idx = indices[title]
