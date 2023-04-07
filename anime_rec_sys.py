@@ -9,27 +9,11 @@ import streamlit as st
 
 # Load the anime data and ratings data
 # ratings_path = 'animelist.csv'
-data_path = 'anime.csv'
+data_path = 'processed_anime.csv'
 # anime_ratings = pd.read_csv(ratings_path)
 anime_data = pd.read_csv(data_path)
 
-# Clean the anime data
-anime_data = anime_data[['MAL_ID', 'Name', 'Score',
-                         'Genres', 'Type', 'Episodes', 'Members']]
-anime_data.rename(columns={'MAL_ID': "anime_id"}, inplace=True)
-anime_data['Name'] = anime_data['Name'].apply(
-    lambda x: re.sub(r'&quot;', '', x))
-anime_data['Name'] = anime_data['Name'].apply(
-    lambda x: re.sub(r'.hack//', '', x))
-anime_data['Name'] = anime_data['Name'].apply(
-    lambda x: re.sub(r'&#039;', '', x))
-anime_data['Name'] = anime_data['Name'].apply(
-    lambda x: re.sub(r'A&#039;s', '', x))
-anime_data['Name'] = anime_data['Name'].apply(
-    lambda x: re.sub(r'I&#039;', 'I\'', x))
-anime_data['Name'] = anime_data['Name'].apply(
-    lambda x: re.sub(r'&amp;', 'and', x))
-anime_data['Genres'] = anime_data['Genres'].fillna('')
+
 genres_str = anime_data['Genres'].str.split(',').astype(str)
 
 # Initialize the TfidfVectorizer with various parameters
